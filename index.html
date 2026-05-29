@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>Dhairya Blessing Ceremony</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --gold:#C9952A;--gold-lt:#E8BA5A;--gold-pale:#FBF0D8;
+  --cream:#FDFAF4;--ink:#1A1207;--ink-soft:#5C4D35;--ink-muted:#9C8A6E;
+  --surface:#FFFFFF;--border:#EAD9B8;
+  --green:#2D7A4F;--green-pale:#E6F4EC;--green-bdr:#A0D5B5;
+  --red:#B84040;--red-pale:#FFF0F0;--red-bdr:#F5CECE;
+  --blue:#2563EB;--blue-pale:#EFF6FF;
+  --sh-sm:0 1px 4px rgba(26,18,7,.08);
+  --sh-md:0 4px 20px rgba(26,18,7,.12);
+  --sh-lg:0 8px 40px rgba(26,18,7,.18);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);color:var(--ink);
+  min-height:100dvh;overflow-x:hidden;
+  padding-bottom:calc(76px + var(--safe-bottom));
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -5%,rgba(201,149,42,.10) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 70% at 90% 105%,rgba(201,149,42,.07) 0%,transparent 55%);
+}
+
+/* ══ NAV TABS ══ */
+#tab-bar{
+  position:sticky;top:0;z-index:300;
+  background:rgba(253,250,244,.97);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1.5px solid var(--border);
+  padding:calc(var(--safe-top) + 10px) 12px 0;
+  box-shadow:var(--sh-sm);
+}
+.app-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.15rem;font-weight:600;color:var(--ink);
+  padding-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.app-title span{font-size:.65rem;font-weight:500;color:var(--ink-muted);letter-spacing:.07em;text-transform:uppercase}
+.tabs{
+  display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:0;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex-shrink:0;padding:9px 18px;
+  border:none;background:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+  color:var(--ink-muted);border-bottom:2.5px solid transparent;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .18s,border-color .18s;
+  white-space:nowrap;
+}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ══ PAGES ══ */
+.page{display:none;position:relative;z-index:1}
+.page.active{display:block}
+
+/* ══════════════════════════════════════════════
+   DASHBOARD PAGE
+══════════════════════════════════════════════ */
+#pg-dashboard{padding:16px 14px 20px;max-width:640px;margin:0 auto}
+
+.dash-hero{
+  background:var(--ink);border-radius:20px;
+  padding:22px 20px 18px;
+  margin-bottom:16px;
+  box-shadow:var(--sh-md);
+  position:relative;overflow:hidden;
+}
+.dash-hero::before{
+  content:'🪷';font-size:5rem;
+  position:absolute;right:-8px;top:-8px;opacity:.12;
+  line-height:1;
+}
+.dash-hero h2{
+  font-family:'Playfair Display',serif;
+  font-size:1.05rem;color:rgba(255,255,255,.65);
+  font-weight:500;margin-bottom:6px;
+}
+.dash-hero .big-num{
+  font-size:3rem;font-weight:700;color:#fff;
+  line-height:1;font-variant-numeric:tabular-nums;
+}
+.dash-hero .big-label{
+  font-size:.72rem;color:rgba(255,255,255,.45);
+  letter-spacing:.08em;text-transform:uppercase;margin-top:4px;
+}
+.live-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--gold-lt);animation:blink 2s infinite;
+  margin-right:6px;flex-shrink:0;
+}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+
+.dash-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.dash-card{
+  border-radius:16px;padding:16px 14px 14px;
+  display:flex;flex-direction:column;gap:4px;
+  border:1.5px solid transparent;
+}
+.dash-card.arrived{background:var(--green-pale);border-color:var(--green-bdr)}
+.dash-card.pending{background:#FFF7E6;border-color:#F0D080}
+.dash-card .dc-label{
+  font-size:.65rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+}
+.dash-card.arrived .dc-label{color:var(--green)}
+.dash-card.pending  .dc-label{color:#886600}
+.dash-card .dc-num{
+  font-size:2rem;font-weight:700;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.dash-card.arrived .dc-num{color:var(--green)}
+.dash-card.pending  .dc-num{color:#7A5000}
+.dash-card .dc-sub{font-size:.68rem}
+.dash-card.arrived .dc-sub{color:rgba(45,122,79,.6)}
+.dash-card.pending  .dc-sub{color:rgba(122,80,0,.55)}
+
+/* Progress bar */
+.progress-wrap{margin-bottom:20px}
+.progress-label{
+  display:flex;justify-content:space-between;
+  font-size:.75rem;color:var(--ink-muted);margin-bottom:6px;
+}
+.progress-track{
+  height:10px;background:var(--border);border-radius:100px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;background:linear-gradient(90deg,var(--green),var(--gold-lt));
+  border-radius:100px;transition:width .6s ease;width:0%;
+}
+
+/* Section breakdown table */
+.breakdown-title{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:600;color:var(--ink);
+  margin-bottom:10px;
+}
+.breakdown-table{display:flex;flex-direction:column;gap:7px}
+.bt-row{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:14px;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:border-color .18s,background .18s;
+}
+.bt-row:active{background:var(--gold-pale)}
+.bt-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;flex-shrink:0;
+}
+.bt-info{flex:1;min-width:0}
+.bt-name{font-size:.9rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt-nums{font-size:.72rem;color:var(--ink-muted);margin-top:1px}
+.bt-mini-bar{
+  width:60px;height:6px;background:var(--border);border-radius:100px;overflow:hidden;flex-shrink:0;
+}
+.bt-mini-fill{height:100%;background:var(--green);border-radius:100px;transition:width .5s}
+
+/* ══════════════════════════════════════════════
+   SECTIONS PAGE
+══════════════════════════════════════════════ */
+#pg-sections{padding:12px 12px 20px;max-width:640px;margin:0 auto}
+
+/* Global search */
+.global-search-wrap{position:relative;margin-bottom:12px}
+.global-search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-muted);pointer-events:none}
+#global-search{
+  width:100%;height:46px;padding:0 42px 0 42px;
+  border:1.5px solid var(--border);border-radius:13px;
+  background:var(--surface);
+  font-family:'DM Sans',sans-serif;font-size:1rem;color:var(--ink);
+  outline:none;-webkit-appearance:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+#global-search::placeholder{color:var(--ink-muted)}
+#global-search:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,149,42,.14)}
+.gs-clear{
+  display:none;position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;background:var(--border);border:none;cursor:pointer;
+  align-items:center;justify-content:center;color:var(--ink-soft);
+  -webkit-tap-highlight-color:transparent;
+}
+.gs-clear.visible{display:flex}
+
+/* Add section button */
+.add-section-btn{
+  width:100%;padding:13px;border-radius:14px;
+  background:var(--surface);border:2px dashed var(--border);
+  color:var(--ink-soft);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  -webkit-tap-highlight-color:transparent;margin-bottom:12px;
+  transition:border-color .18s,background .18s,color .18s;
+}
+.add-section-btn:active{background:var(--gold-pale);border-color:var(--gold);color:var(--gold)}
+
+/* Section card */
+.section-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:18px;margin-bottom:12px;
+  overflow:hidden;box-shadow:var(--sh-sm);
+}
+.section-header{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 14px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.section-icon{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+.section-info{flex:1;min-width:0}
+.section-name{font-size:.95rem;font-weight:600;color:var(--ink)}
+.section-stats{font-size:.72rem;color:var(--ink-muted);margin-top:2px}
+.section-chevron{
+  color:var(--ink-muted);transition:transform .25s;flex-shrink:0;
+}
+.section-card.open .section-chevron{transform:rotate(180deg)}
+
+/* mini progress in header */
+.section-prog{
+  width:48px;height:5px;background:var(--border);border-radius:100px;overflow:hidden;
+  flex-shrink:0;
+}
+.section-prog-fill{height:100%;background:var(--green);border-radius:100px;transition:width .4s}
+
+/* Section body */
+.section-body{display:none;border-top:1.5px solid var(--border)}
+.section-card.open .section-body{display:block}
+
+/* Section toolbar */
+.sec-toolbar{
+  display:flex;gap:8px;padding:10px 12px;
+  background:rgba(253,250,244,.7);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.sec-toolbar::-webkit-scrollbar{display:none}
+
+.sec-btn{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;
+  border:none;cursor:pointer;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .12s,background .15s;
+}
+.sec-btn:active{transform:scale(.93)}
+.sec-btn-gold{background:var(--gold);color:#fff;box-shadow:0 2px 8px rgba(201,149,42,.32)}
+.sec-btn-ghost{background:var(--surface);color:var(--ink-soft);border:1.5px solid var(--border)}
+.sec-btn-red{background:var(--red-pale);color:var(--red);border:1.5px solid var(--red-bdr)}
+
+/* Add name form */
+.add-name-form{
+  display:none;padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  background:#faf8f3;
+}
+.add-name-form.open{display:flex;gap:8px;align-items:center}
+.add-name-input{
+  flex:1;height:42px;padding:0 12px;
+  border:1.5px solid var(--border);border-radius:11px;
+  font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);
+  background:var(--surface);outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+.add-name-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,149,42,.12)}
+.add-name-submit{
+  flex-shrink:0;height:42px;padding:0 16px;
+  background:var(--gold);color:#fff;border:none;border-radius:11px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:transform .12s,background .15s;
+}
+.add-name-submit:active{transform:scale(.94)}
+
+/* Section search */
+.sec-search-wrap{
+  padding:8px 12px;border-bottom:1px solid var(--border);
+  background:#faf8f3;position:relative;
+}
+.sec-search-wrap svg{position:absolute;left:24px;top:50%;transform:translateY(-50%);color:var(--ink-muted);pointer-events:none}
+.sec-search-input{
+  width:100%;height:38px;padding:0 12px 0 36px;
+  border:1.5px solid var(--border);border-radius:10px;
+  background:var(--surface);font-family:'DM Sans',sans-serif;
+  font-size:.88rem;color:var(--ink);outline:none;
+  transition:border-color .18s;
+}
+.sec-search-input:focus{border-color:var(--gold)}
+
+/* Guest list inside section */
+.sec-guest-list{padding:8px 10px 10px}
+.sec-filter-row{
+  display:flex;gap:6px;padding:0 2px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.sec-filter-row::-webkit-scrollbar{display:none}
+.sf-tab{
+  flex-shrink:0;padding:5px 12px;border-radius:100px;
+  font-size:.73rem;font-weight:600;
+  border:1.5px solid var(--border);background:var(--surface);color:var(--ink-muted);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background .14s,color .14s,border-color .14s;
+}
+.sf-tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sf-tab.active.g{background:var(--green);border-color:var(--green)}
+
+/* Guest row */
+.guest-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:13px;margin-bottom:6px;min-height:56px;
+  padding:10px 12px;cursor:pointer;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s,border-color .15s,transform .1s;
+}
+.guest-row:active{transform:scale(.975)}
+.guest-row.checked{background:var(--green-pale);border-color:var(--green-bdr)}
+.guest-row.hl{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,149,42,.18)}
+
+.chk{
+  width:28px;height:28px;border-radius:9px;flex-shrink:0;
+  border:2.5px solid var(--border);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,border-color .15s,transform .12s;
+}
+.guest-row.checked .chk{background:var(--green);border-color:var(--green);transform:scale(1.07)}
+.chk svg{opacity:0;transition:opacity .14s}
+.guest-row.checked .chk svg{opacity:1}
+
+.gname{flex:1;font-size:.95rem;font-weight:500;color:var(--ink);line-height:1.3;transition:color .15s}
+.guest-row.checked .gname{color:var(--green);text-decoration:line-through;text-decoration-color:rgba(45,122,79,.4)}
+
+.arrived-tag{
+  display:none;flex-shrink:0;
+  font-size:.63rem;font-weight:700;letter-spacing:.04em;
+  background:#c8ebd6;color:var(--green);border-radius:100px;padding:3px 8px;
+}
+.guest-row.checked .arrived-tag{display:block}
+
+.del-btn{
+  flex-shrink:0;width:32px;height:32px;border-radius:9px;
+  background:var(--red-pale);border:1.5px solid var(--red-bdr);
+  color:var(--red);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:transform .12s,background .14s;
+}
+.del-btn:active{transform:scale(.88);background:#fde0e0}
+
+.empty-sec{
+  text-align:center;padding:32px 16px;
+  color:var(--ink-muted);font-size:.88rem;
+}
+.empty-sec .e-icon{font-size:2rem;margin-bottom:8px}
+
+/* ══ MODALS ══ */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(26,18,7,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  align-items:flex-end;justify-content:center;
+}
+.modal-backdrop.open{display:flex}
+.modal-sheet{
+  width:100%;max-width:520px;
+  background:var(--surface);border-radius:24px 24px 0 0;
+  padding:0 0 calc(20px + var(--safe-bottom));
+  box-shadow:var(--sh-lg);
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{
+  width:36px;height:4px;background:var(--border);border-radius:100px;
+  margin:14px auto 0;
+}
+.modal-title{
+  font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;
+  padding:14px 20px 10px;border-bottom:1px solid var(--border);
+}
+.modal-body{padding:16px 20px}
+.modal-label{font-size:.8rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block}
+.modal-input{
+  width:100%;height:48px;padding:0 14px;
+  border:1.5px solid var(--border);border-radius:13px;
+  font-family:'DM Sans',sans-serif;font-size:1rem;color:var(--ink);
+  outline:none;-webkit-appearance:none;margin-bottom:14px;
+  transition:border-color .18s,box-shadow .18s;
+}
+.modal-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,149,42,.13)}
+.emoji-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.emoji-opt{
+  width:42px;height:42px;border-radius:11px;
+  border:2px solid var(--border);background:var(--surface);
+  font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:border-color .14s,background .14s;
+}
+.emoji-opt.selected{border-color:var(--gold);background:var(--gold-pale)}
+.modal-actions{display:flex;gap:10px;padding:0 20px}
+.modal-btn{
+  flex:1;height:48px;border:none;border-radius:13px;
+  font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:transform .12s,background .15s;
+}
+.modal-btn:active{transform:scale(.96)}
+.modal-btn-primary{background:var(--gold);color:#fff;box-shadow:0 3px 12px rgba(201,149,42,.35)}
+.modal-btn-ghost{background:var(--surface);color:var(--ink-soft);border:1.5px solid var(--border)}
+
+/* ══ BOTTOM NAV ══ */
+#bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:400;
+  background:rgba(253,250,244,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1.5px solid var(--border);
+  padding:10px 16px calc(10px + var(--safe-bottom));
+  display:flex;gap:8px;
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 4px;border-radius:13px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:600;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .14s,color .14s,transform .11s;
+  background:transparent;color:var(--ink-muted);
+}
+.bnav-btn:active{transform:scale(.92)}
+.bnav-btn.active{background:var(--gold-pale);color:var(--gold)}
+.bnav-btn svg{width:22px;height:22px}
+
+/* ══ UPLOAD OVERLAY ══ */
+#upload-overlay{
+  display:none;position:fixed;inset:0;z-index:900;
+  background:rgba(253,250,244,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+#upload-overlay.active{display:flex}
+#upload-overlay p{font-family:'Playfair Display',serif;font-size:1.1rem}
+#upload-overlay small{color:var(--ink-muted);font-size:.8rem}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══ TOAST ══ */
+#toast{
+  position:fixed;bottom:calc(84px + var(--safe-bottom));
+  left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--ink);color:#fff;
+  font-size:.84rem;font-weight:500;
+  padding:11px 22px;border-radius:100px;
+  box-shadow:var(--sh-md);z-index:1000;
+  opacity:0;pointer-events:none;
+  transition:opacity .22s,transform .22s;
+  white-space:nowrap;max-width:calc(100vw - 32px);text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ══ FAB ══ */
+#fab-top{
+  position:fixed;right:14px;bottom:calc(82px + var(--safe-bottom));
+  width:42px;height:42px;border-radius:50%;
+  background:var(--ink);color:#fff;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--sh-md);opacity:0;pointer-events:none;
+  transition:opacity .22s,transform .22s;z-index:300;
+  -webkit-tap-highlight-color:transparent;
+}
+#fab-top.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     TAB BAR
+══════════════════════════════════════════ -->
+<div id="tab-bar">
+  <div class="app-title">
+    Dhairya Blessing Ceremony
+    <span><span class="live-dot"></span>Live</span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="showPage('sections',this)">👥 Guests</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DASHBOARD PAGE
+══════════════════════════════════════════ -->
+<div id="pg-dashboard" class="page active">
+  <div class="dash-hero">
+    <h2>Total Guests</h2>
+    <div class="big-num" id="d-total">0</div>
+    <div class="big-label">invited</div>
+  </div>
+
+  <div class="dash-cards">
+    <div class="dash-card arrived">
+      <div class="dc-label">✓ Arrived</div>
+      <div class="dc-num" id="d-arrived">0</div>
+      <div class="dc-sub">checked in</div>
+    </div>
+    <div class="dash-card pending">
+      <div class="dc-label">⏳ Pending</div>
+      <div class="dc-num" id="d-pending">0</div>
+      <div class="dc-sub">awaited</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Attendance Progress</span>
+      <span id="d-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="d-bar"></div></div>
+  </div>
+
+  <div class="breakdown-title">By Section</div>
+  <div class="breakdown-table" id="breakdown-table"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTIONS / GUESTS PAGE
+══════════════════════════════════════════ -->
+<div id="pg-sections" class="page">
+  <!-- Global search -->
+  <div class="global-search-wrap">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="global-search" type="search" placeholder="Search all guests…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    <button class="gs-clear" id="gs-clear">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <button class="add-section-btn" onclick="openAddSectionModal()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    Add New Section
+  </button>
+
+  <div id="sections-container"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD SECTION MODAL
+══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-add-section" onclick="closeModal('modal-add-section')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add New Section</div>
+    <div class="modal-body">
+      <label class="modal-label">Section Name</label>
+      <input class="modal-input" id="new-section-name" placeholder="e.g. Office Colleagues" maxlength="40"/>
+      <label class="modal-label">Pick an Icon</label>
+      <div class="emoji-row" id="emoji-row"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal('modal-add-section')">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmAddSection()">Add Section</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input (shared, assigned dynamically) -->
+<input type="file" id="global-file-input" accept=".xlsx,.xls,.csv" style="display:none"/>
+
+<!-- Upload overlay -->
+<div id="upload-overlay">
+  <div class="spinner"></div>
+  <p>Syncing to Firebase…</p>
+  <small id="upload-label">Please wait…</small>
+</div>
+
+<!-- Bottom nav -->
+<nav id="bottom-nav">
+  <button class="bnav-btn active" id="bnav-dashboard" onclick="showPage('dashboard',null)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </button>
+  <button class="bnav-btn" id="bnav-sections" onclick="showPage('sections',null)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Guests
+  </button>
+  <button class="bnav-btn" onclick="exportAll()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export
+  </button>
+</nav>
+
+<button id="fab-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Top">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
+<script>
+/* ── Firebase Config ─────────────────────────────────────
+   Fill YOUR values below. databaseURL is already set.
+─────────────────────────────────────────────────────── */
+const firebaseConfig = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_AUTH_DOMAIN",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId:             "YOUR_APP_ID",
+  databaseURL:       "https://dhairya-gl-default-rtdb.europe-west1.firebasedatabase.app/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ── Default sections ─────────────────────────────────── */
+const DEFAULT_SECTIONS = [
+  { id:'family_relatives',   name:'Family & Relatives',  icon:'👨‍👩‍👧‍👦' },
+  { id:'shubham_nanihal',    name:'Shubham Nanihal',     icon:'🏡' },
+  { id:'jaipur_relative',    name:'Jaipur Relative',     icon:'🏰' },
+  { id:'close_friends',      name:'Close Friends',       icon:'🤝' },
+  { id:'bua_ji',             name:'Bua Ji',              icon:'👩' },
+  { id:'cousin_sisters',     name:'Cousin Sisters',      icon:'👭' },
+  { id:'bua_ki_beti',        name:'Bua Ki Beti',         icon:'🌸' },
+  { id:'neice',              name:'Niece',               icon:'👧' },
+  { id:'bhan_nagar',         name:'Bhan Nagar',          icon:'🏘️' },
+  { id:'samdhi_ji',          name:'Samdhi Ji',           icon:'🎊' },
+];
+const EMOJI_OPTIONS = ['👨‍👩‍👧‍👦','🤝','👩','👧','🏡','🏰','🌸','🎊','🏘️','👭','⭐','🎉','💐','🙏','🎵','🌺','👶','🤴','👸','💼'];
+
+/* ── State ────────────────────────────────────────────── */
+let sections    = [];   // [{id, name, icon}]
+let guestsData  = {};   // {sectionId: {guestKey: {name, checked}}}
+let globalSearch = '';
+let activeSectionFilters = {}; // sectionId -> 'all'|'arrived'|'pending'
+let sectionSearches = {};      // sectionId -> string
+let currentUploadSectionId = null;
+let selectedEmoji = '⭐';
+
+/* ── DOM ─────────────────────────────────────────────── */
+const sectionsContainer = document.getElementById('sections-container');
+const globalSearchInput = document.getElementById('global-search');
+const gsClearBtn        = document.getElementById('gs-clear');
+const fileInput         = document.getElementById('global-file-input');
+const uploadOverlay     = document.getElementById('upload-overlay');
+const uploadLabel       = document.getElementById('upload-label');
+
+/* ══════════════════════════════════════════════════════
+   FIREBASE INIT & LISTENERS
+══════════════════════════════════════════════════════ */
+const metaRef   = db.ref('meta');
+const guestsRef = db.ref('guests');
+
+// Load sections config
+metaRef.child('sections').on('value', snap => {
+  const val = snap.val();
+  if (val && Array.isArray(val)) {
+    sections = val;
+  } else {
+    // First run: push defaults
+    sections = DEFAULT_SECTIONS;
+    metaRef.child('sections').set(sections);
+  }
+  renderSections();
+  renderDashboard();
+});
+
+// Load all guests
+guestsRef.on('value', snap => {
+  guestsData = snap.val() || {};
+  renderSections();
+  renderDashboard();
+});
+
+/* ══════════════════════════════════════════════════════
+   PAGES / TABS
+══════════════════════════════════════════════════════ */
+function showPage(pg, tabEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pg-' + pg).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  const bnav = document.getElementById('bnav-' + pg);
+  if (bnav) bnav.classList.add('active');
+  // sync tab bar
+  document.querySelectorAll('.tab-btn').forEach(t => {
+    if (t.textContent.toLowerCase().includes(pg === 'dashboard' ? 'dashboard' : 'guest'))
+      t.classList.add('active');
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════ */
+function renderDashboard() {
+  let total = 0, arrived = 0;
+  Object.values(guestsData).forEach(sec => {
+    if (!sec) return;
+    Object.values(sec).forEach(g => {
+      total++;
+      if (g.checked) arrived++;
+    });
+  });
+  const pending = total - arrived;
+  const pct = total > 0 ? Math.round((arrived / total) * 100) : 0;
+
+  document.getElementById('d-total').textContent   = total;
+  document.getElementById('d-arrived').textContent = arrived;
+  document.getElementById('d-pending').textContent = pending;
+  document.getElementById('d-pct').textContent     = pct + '%';
+  document.getElementById('d-bar').style.width     = pct + '%';
+
+  // Breakdown table
+  const table = document.getElementById('breakdown-table');
+  table.innerHTML = sections.map(sec => {
+    const secGuests = Object.values(guestsData[sec.id] || {});
+    const st = secGuests.length;
+    const sa = secGuests.filter(g => g.checked).length;
+    const sp = st - sa;
+    const spct = st > 0 ? Math.round((sa/st)*100) : 0;
+    return `
+    <div class="bt-row" onclick="showPage('sections',null);setTimeout(()=>openSection('${sec.id}'),100)">
+      <div class="bt-icon" style="background:${sectionBg(sec.id)}">${sec.icon}</div>
+      <div class="bt-info">
+        <div class="bt-name">${esc(sec.name)}</div>
+        <div class="bt-nums">${st} total &nbsp;·&nbsp; <span style="color:var(--green)">${sa} arrived</span> &nbsp;·&nbsp; <span style="color:#886600">${sp} pending</span></div>
+      </div>
+      <div class="bt-mini-bar"><div class="bt-mini-fill" style="width:${spct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   SECTIONS RENDER
+══════════════════════════════════════════════════════ */
+const SECTION_COLORS = [
+  '#FBF0D8','#E6F4EC','#EFF6FF','#FFF0F8','#F5F0FF',
+  '#FFF7E6','#E8F8F8','#FFF3F3','#F0F8E8','#FAF0FF'
+];
+function sectionBg(id) {
+  const idx = sections.findIndex(s => s.id === id);
+  return SECTION_COLORS[idx % SECTION_COLORS.length];
+}
+
+function renderSections() {
+  if (!sections.length) return;
+  const q = globalSearch.trim().toLowerCase();
+
+  sectionsContainer.innerHTML = sections.map((sec, idx) => {
+    const secGuests = guestsData[sec.id] || {};
+    const entries = Object.entries(secGuests)
+      .map(([k,v]) => ({key:k, name:v.name, checked:!!v.checked}))
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    const total   = entries.length;
+    const arrived = entries.filter(e => e.checked).length;
+    const pending = total - arrived;
+    const pct     = total > 0 ? Math.round((arrived/total)*100) : 0;
+
+    const filter = activeSectionFilters[sec.id] || 'all';
+    const secQ   = (sectionSearches[sec.id] || '').toLowerCase();
+
+    let filtered = entries;
+    if (filter === 'arrived') filtered = entries.filter(e => e.checked);
+    if (filter === 'pending') filtered = entries.filter(e => !e.checked);
+    if (secQ) filtered = filtered.filter(e => e.name.toLowerCase().includes(secQ));
+    // global search: if active, only show sections with matches
+    if (q) filtered = entries.filter(e => e.name.toLowerCase().includes(q));
+
+    const guestRows = filtered.length === 0
+      ? `<div class="empty-sec"><div class="e-icon">🌸</div>${
+          entries.length === 0 ? 'No guests yet. Add names or upload a list.' : 'No matches found.'}</div>`
+      : filtered.map(g => {
+          const hl = (q && g.name.toLowerCase().includes(q)) || (secQ && g.name.toLowerCase().includes(secQ)) ? ' hl' : '';
+          const displayName = (q||secQ) ? highlight(esc(g.name), q||secQ) : esc(g.name);
+          return `
+          <div class="guest-row${g.checked?' checked':''}${hl}" onclick="toggleGuest('${sec.id}','${g.key}',${!g.checked})">
+            <div class="chk">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="gname">${displayName}</span>
+            <span class="arrived-tag">Arrived</span>
+            <button class="del-btn" onclick="event.stopPropagation();deleteGuest('${sec.id}','${g.key}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>`;
+        }).join('');
+
+    const isOpen = document.querySelector(`[data-secid="${sec.id}"]`)?.classList.contains('open');
+    const addFormOpen = document.querySelector(`[data-addform="${sec.id}"]`)?.classList.contains('open');
+
+    return `
+    <div class="section-card${isOpen?' open':''}" data-secid="${sec.id}" id="sec-${sec.id}">
+      <div class="section-header" onclick="toggleSection('${sec.id}')">
+        <div class="section-icon" style="background:${sectionBg(sec.id)}">${sec.icon}</div>
+        <div class="section-info">
+          <div class="section-name">${esc(sec.name)}</div>
+          <div class="section-stats">${total} guests &nbsp;·&nbsp; ${arrived} arrived &nbsp;·&nbsp; ${pending} pending</div>
+        </div>
+        <div class="section-prog"><div class="section-prog-fill" style="width:${pct}%"></div></div>
+        <svg class="section-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      <div class="section-body">
+        <!-- Toolbar -->
+        <div class="sec-toolbar">
+          <button class="sec-btn sec-btn-gold" onclick="triggerUpload('${sec.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Excel
+          </button>
+          <button class="sec-btn sec-btn-ghost" onclick="toggleAddForm('${sec.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Name
+          </button>
+          <button class="sec-btn sec-btn-ghost" onclick="exportSection('${sec.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+            Export
+          </button>
+          <button class="sec-btn sec-btn-red" onclick="deleteSection('${sec.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            Delete
+          </button>
+        </div>
+
+        <!-- Add name form -->
+        <div class="add-name-form${addFormOpen?' open':''}" data-addform="${sec.id}">
+          <input class="add-name-input" id="add-input-${sec.id}" placeholder="Guest full name…" maxlength="60"
+            onkeydown="if(event.key==='Enter')submitAddName('${sec.id}')"/>
+          <button class="add-name-submit" onclick="submitAddName('${sec.id}')">Add</button>
+        </div>
+
+        <!-- Section search -->
+        <div class="sec-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="sec-search-input" placeholder="Search in ${esc(sec.name)}…"
+            value="${esc(sectionSearches[sec.id]||'')}"
+            oninput="secSearch('${sec.id}',this.value)"/>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="sec-guest-list">
+          <div class="sec-filter-row">
+            <button class="sf-tab${filter==='all'?' active':''}" onclick="secFilter('${sec.id}','all',this)">All (${total})</button>
+            <button class="sf-tab${filter==='arrived'?' active g':''}" onclick="secFilter('${sec.id}','arrived',this)">✓ Arrived (${arrived})</button>
+            <button class="sf-tab${filter==='pending'?' active':''}" onclick="secFilter('${sec.id}','pending',this)">⏳ Pending (${pending})</button>
+          </div>
+          ${guestRows}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Toggle section open/close ────────────────────────── */
+function toggleSection(id) {
+  const card = document.getElementById('sec-' + id);
+  if (card) card.classList.toggle('open');
+}
+function openSection(id) {
+  const card = document.getElementById('sec-' + id);
+  if (card) { card.classList.add('open'); card.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
+
+/* ── Toggle add-name form ─────────────────────────────── */
+function toggleAddForm(id) {
+  // Re-query after render
+  const forms = document.querySelectorAll(`[data-addform="${id}"]`);
+  forms.forEach(f => {
+    f.classList.toggle('open');
+    if (f.classList.contains('open')) {
+      const inp = document.getElementById('add-input-' + id);
+      if (inp) setTimeout(() => inp.focus(), 80);
+    }
+  });
+}
+
+/* ── Section filter ───────────────────────────────────── */
+function secFilter(id, val, el) {
+  activeSectionFilters[id] = val;
+  renderSections();
+}
+function secSearch(id, val) {
+  sectionSearches[id] = val;
+  renderSections();
+}
+
+/* ══════════════════════════════════════════════════════
+   TOGGLE GUEST
+══════════════════════════════════════════════════════ */
+function toggleGuest(secId, guestKey, newVal) {
+  db.ref(`guests/${secId}/${guestKey}/checked`).set(newVal);
+  if (!guestsData[secId]) guestsData[secId] = {};
+  if (guestsData[secId][guestKey]) guestsData[secId][guestKey].checked = newVal;
+  renderSections();
+  renderDashboard();
+  if (navigator.vibrate) navigator.vibrate(28);
+}
+
+/* ══════════════════════════════════════════════════════
+   ADD NAME MANUALLY
+══════════════════════════════════════════════════════ */
+function submitAddName(secId) {
+  const inp = document.getElementById('add-input-' + secId);
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (!name) { showToast('Enter a name first.'); return; }
+  const key = db.ref(`guests/${secId}`).push().key;
+  db.ref(`guests/${secId}/${key}`).set({ name, checked: false });
+  inp.value = '';
+  showToast(`✓ "${name}" added`);
+}
+
+/* ══════════════════════════════════════════════════════
+   DELETE GUEST
+══════════════════════════════════════════════════════ */
+function deleteGuest(secId, guestKey) {
+  if (!confirm('Remove this guest?')) return;
+  db.ref(`guests/${secId}/${guestKey}`).remove();
+}
+
+/* ══════════════════════════════════════════════════════
+   UPLOAD EXCEL / CSV
+══════════════════════════════════════════════════════ */
+function triggerUpload(secId) {
+  currentUploadSectionId = secId;
+  fileInput.value = '';
+  fileInput.click();
+}
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file || !currentUploadSectionId) return;
+  const secId = currentUploadSectionId;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      let names = [];
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        names = parseCSV(evt.target.result);
+      } else {
+        const wb  = XLSX.read(new Uint8Array(evt.target.result), { type:'array' });
+        const ws  = wb.Sheets[wb.SheetNames[0]];
+        XLSX.utils.sheet_to_json(ws,{header:1,defval:''}).forEach(row =>
+          row.forEach(cell => { const v=String(cell||'').trim(); if(v) names.push(v); })
+        );
+      }
+      names = [...new Set(names.filter(Boolean))].sort((a,b) => a.localeCompare(b,'en',{sensitivity:'base'}));
+      if (!names.length) { showToast('No names found in file.'); return; }
+      const sec = sections.find(s => s.id === secId);
+      if (confirm(`Upload ${names.length} guests to "${sec?.name}"?\nThis ADDS to existing guests.`))
+        pushNamesToSection(secId, names);
+    } catch(err) { console.error(err); showToast('Could not parse file.'); }
+  };
+  file.name.toLowerCase().endsWith('.csv') ? reader.readAsText(file) : reader.readAsArrayBuffer(file);
+});
+
+function parseCSV(text) {
+  const names = [];
+  text.split(/\r?\n/).forEach(row =>
+    row.split(',').forEach(cell => { const v=cell.replace(/^["']|["']$/g,'').trim(); if(v) names.push(v); })
+  );
+  return names;
+}
+
+async function pushNamesToSection(secId, names) {
+  uploadOverlay.classList.add('active');
+  uploadLabel.textContent = `Adding ${names.length} guests…`;
+  try {
+    const updates = {};
+    names.forEach(name => {
+      const key = db.ref(`guests/${secId}`).push().key;
+      updates[`guests/${secId}/${key}`] = { name, checked: false };
+    });
+    await db.ref().update(updates);
+    uploadOverlay.classList.remove('active');
+    showToast(`✓ ${names.length} guests added!`);
+  } catch(err) {
+    uploadOverlay.classList.remove('active');
+    console.error(err);
+    showToast('Upload failed. Check Firebase config.');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   ADD SECTION MODAL
+══════════════════════════════════════════════════════ */
+function openAddSectionModal() {
+  selectedEmoji = '⭐';
+  document.getElementById('new-section-name').value = '';
+  // Build emoji picker
+  const row = document.getElementById('emoji-row');
+  row.innerHTML = EMOJI_OPTIONS.map(e =>
+    `<button class="emoji-opt${e===selectedEmoji?' selected':''}" onclick="selectEmoji('${e}',this)">${e}</button>`
+  ).join('');
+  document.getElementById('modal-add-section').classList.add('open');
+  setTimeout(() => document.getElementById('new-section-name').focus(), 150);
+}
+function selectEmoji(e, el) {
+  selectedEmoji = e;
+  document.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function confirmAddSection() {
+  const name = document.getElementById('new-section-name').value.trim();
+  if (!name) { showToast('Enter a section name.'); return; }
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/__+/g,'_') + '_' + Date.now();
+  sections.push({ id, name, icon: selectedEmoji });
+  metaRef.child('sections').set(sections);
+  closeModal('modal-add-section');
+  showToast(`"${name}" section added!`);
+  setTimeout(() => { showPage('sections',null); openSection(id); }, 300);
+}
+
+/* ══════════════════════════════════════════════════════
+   DELETE SECTION
+══════════════════════════════════════════════════════ */
+async function deleteSection(secId) {
+  const sec = sections.find(s => s.id === secId);
+  const count = Object.keys(guestsData[secId] || {}).length;
+  if (!confirm(`Delete section "${sec?.name}"${count>0?` and all ${count} guests`:''}? This cannot be undone.`)) return;
+  sections = sections.filter(s => s.id !== secId);
+  await Promise.all([
+    metaRef.child('sections').set(sections),
+    db.ref(`guests/${secId}`).remove()
+  ]);
+  showToast('Section deleted.');
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════ */
+function exportSection(secId) {
+  const sec = sections.find(s => s.id === secId);
+  const rows = Object.values(guestsData[secId] || {}).sort((a,b) => a.name.localeCompare(b.name));
+  if (!rows.length) { showToast('No guests to export.'); return; }
+  const csv = [`Section,Name,Status`,
+    ...rows.map(g => `"${sec?.name}","${g.name}",${g.checked?'Arrived':'Pending'}`)
+  ].join('\n');
+  dlCSV(csv, `${sec?.id || 'guests'}.csv`);
+  showToast('Section exported!');
+}
+function exportAll() {
+  const lines = ['Section,Name,Status'];
+  sections.forEach(sec => {
+    Object.values(guestsData[sec.id]||{}).sort((a,b)=>a.name.localeCompare(b.name)).forEach(g =>
+      lines.push(`"${sec.name}","${g.name}",${g.checked?'Arrived':'Pending'}`)
+    );
+  });
+  if (lines.length === 1) { showToast('No guests to export.'); return; }
+  dlCSV(lines.join('\n'), 'dhairya_all_guests.csv');
+  showToast('Full export downloaded!');
+}
+function dlCSV(csv, filename) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
+    download: filename
+  });
+  a.click();
+}
+
+/* ══════════════════════════════════════════════════════
+   GLOBAL SEARCH
+══════════════════════════════════════════════════════ */
+globalSearchInput.addEventListener('input', e => {
+  globalSearch = e.target.value;
+  gsClearBtn.classList.toggle('visible', globalSearch.length > 0);
+  renderSections();
+});
+gsClearBtn.addEventListener('click', () => {
+  globalSearchInput.value = ''; globalSearch = '';
+  gsClearBtn.classList.remove('visible');
+  globalSearchInput.focus(); renderSections();
+});
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+function highlight(name, q) {
+  if (!q) return name;
+  const i = name.toLowerCase().indexOf(q.toLowerCase());
+  if (i === -1) return name;
+  return name.slice(0,i)+`<mark style="background:rgba(201,149,42,.28);border-radius:3px;padding:0 1px">${name.slice(i,i+q.length)}</mark>`+name.slice(i+q.length);
+}
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('fab-top').classList.toggle('visible', window.scrollY > 280);
+}, {passive:true});
+</script>
+</body>
+</html>
